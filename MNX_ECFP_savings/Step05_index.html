@@ -1,0 +1,666 @@
+﻿<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<style>
+
+    .link {
+        fill: none;
+        stroke: #000;
+    }
+
+    .node circle {
+        pointer-events: all;
+        stroke: #000;
+        stroke-width: 1px;
+    }
+</style>
+
+<HEAD>
+
+    <TITLE>Your Title Here</TITLE>
+
+</HEAD>
+<body>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="./Step05_d3-hypergraph.js"></script>
+
+    <script type="text/javascript">
+
+
+
+        var dataMarker = { id: 0, name: 'circle', path: 'M 0, 0  m -5, 0  a 5,5 0 1,0 10,0  a 5,5 0 1,0 -10,0', viewbox: '-6 -6 12 12' };
+        var nodeR = 15, lNodeR = 2;
+        var nodeId = 0;
+        var width = 3840,
+            height = 2560;
+        //zoom handler
+        var zoom = d3.zoom()
+            .scaleExtent([1 / 2, 10])
+            .on("zoom", zoomed);
+
+        //drag handler
+        var drag = d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended);
+
+        //svg creation
+        var svg = d3.select("body")
+            .append("svg:svg")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom)
+            .append("g");
+
+        var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+
+        //defs creation for markers
+        var defs = svg.append("defs");
+
+        //force layout definition
+        var simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(function (d) { return d.id; }))//.distance(80).strength(1))
+            .force("charge", d3.forceManyBody().strength(-50).distanceMin(0).distanceMax(200))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collide", d3.forceCollide(50));
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //data reading from json file
+
+        d3.json("Step05_graph.json", function (error, graph) {
+            if (error) throw error;
+            //console.log(graph);
+            var original_nodes = graph.nodes;
+            //console.log(JSON.stringify(nodes));
+            var nodes_1 = JSON.parse(JSON.stringify(original_nodes)),
+                links = graph.links,
+                bilinks = [];
+            console.log(original_nodes)
+            console.log(nodes_1);
+            linksHyperAr = Create2DArray_3(links),//<<<<<<<<<<<<<<<<<<<<<<
+                console.log(linksHyperAr);
+            //d3.hypergraph invocation passing links and nodes
+            data = [];
+            data = d3.hypergraph(linksHyperAr, original_nodes);
+            //console.log(data);
+            //get source number
+            sourcenum = returnsource(links);
+            //d3.hypergraph links
+            //console.log("1");
+            //console.log(links);
+            links = data.links;//
+            //console.log("2");
+            //console.log(links);
+            //d3.hypergraph nodes
+            original_nodes = data.nodes;
+            //node mapping by id
+            nodeById = d3.map(original_nodes, function (d) { return d.id; });
+            //console.log(nodes);
+
+            bilinks_1 = [];
+            bilinks_2 = [];
+            bilinks_victory = [];
+            bilinks_success = [];  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            for (var j = 0; j < linksHyperAr.length; j++) {
+
+                bilinks_1[j] = [];
+                bilinks_2[j] = [];
+                //find correct target
+                link_1 = [linksHyperAr[j]];
+                console.log(link_1);
+                data_1 = [];
+                //question, should use node?
+                console.log(JSON.stringify(original_nodes));  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                console.log(JSON.stringify(nodes_1));         //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                console.log(JSON.stringify(data.nodes));      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                console.log(JSON.stringify(graph.nodes));
+                data_1 = d3.hypergraph(link_1, nodes_1);
+                console.log(JSON.stringify(original_nodes));  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                console.log(JSON.stringify(nodes_1));         //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                console.log(JSON.stringify(data.nodes));      //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                console.log(JSON.stringify(graph.nodes));
+                links_1 = data_1.links;
+                //console.log(links_1);
+
+
+                nodes_1 = data_1.nodes;
+                nodeById_1 = d3.map(nodes_1, function (d) { return d.id; });
+                //console.log(nodeById_1);
+
+                var s;
+                s_list = [];
+                var t;
+                var i = {};
+                nodes_1.push(i);
+
+
+                links_1.forEach(function (link) {
+                    s = link.source = nodeById_1.get(link.source);
+                    s_list.push(s);
+                    t = link.target = nodeById_1.get(link.target);
+                    console.log(t);
+                });
+                console.log(s)
+                //get correct target t from above
+
+
+                true_source = [];
+                true_target = [];
+                //issue about <
+                //console.log(sourcenum[j]);
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+                for (var n = 0; n < sourcenum[j]; n++) {
+                    true_source[n] = s_list[n];
+                }
+                console.log(true_source)
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+
+                //source and correct target
+                links_1.push({ source: true_source, target: i }, { source: i, target: t });
+                bilinks_1[j].push([true_source, i, t]);
+
+                //---------------------------------------------------------------PUSH !!!!!
+                for (var n = 0; n < true_source.length; n++) {
+                    bilinks_success.push([true_source[n], i, t, true]);
+                    bilinks_victory.push([true_source[n], i, t]);
+                }
+                console.log(bilinks_success);
+
+                //var link = svg.selectAll(".link")
+                //    .data(bilinks_1[j])
+                //    .enter().append("path")
+                //    .attr("class", "link")
+                //    .attr("marker-start", "url(#arrowhead)")
+                //    .attr("marker-mid", "url(#textMarker)")
+                //    .attr("marker-end", function (d) {
+                //        //console.log( d);
+                //        //if (!d[2].link)
+                //            if (1)
+                //            return "url(#circleMarker)";
+                //        else
+                //            return "url(#circleMarker)";
+                //    });
+
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+                for (var n = sourcenum[j]; n < s_list.length; n++) {
+                    true_target[n - sourcenum[j]] = s_list[n];
+                }
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+                //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+
+                //target and correct target
+                links_1.push({ source: true_target, target: i }, { source: i, target: t });
+                bilinks_2[j].push([true_target, i, t]);
+
+                //---------------------------------------------------------------PUSH !!!!!
+                for (var n = 0; n < true_target.length; n++) {
+                    bilinks_success.push([true_target[n], i, t, false]);
+                    bilinks_victory.push([true_target[n], i, t]);
+                }
+                //console.log(bilinks_success);
+
+
+                //var link = svg.selectAll(".link")
+                //    .data(bilinks_2[j])
+                //    .enter().append("path")
+                //    .attr("class", "link")
+                //    .attr("marker-start", "url(#circleMarker)")
+                //    .attr("marker-mid", "url(#textMarker)")
+                //    .attr("marker-end", function (d) {
+                //        //console.log( d);
+                //        //if (!d[2].link)
+                //            if (1)
+                //            return "url(#circleMarker)";
+                //        else
+                //            return "url(#circleMarker)";
+                //    });
+
+
+
+
+
+
+
+
+            }
+            console.log(bilinks_1)
+
+
+            //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+            //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+            //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+            //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$//
+
+
+            links.forEach(function (link, j) {
+                //console.log(link);
+                var s = link.source = nodeById.get(link.source),
+                    t = link.target = nodeById.get(link.target),
+                    i = {}; // intermediate node
+
+                //console.log(s);
+                //console.log(t);
+                //console.log(link);
+                original_nodes.push(i);
+                //console.log(i);
+                links.push({ source: s, target: i }, { source: i, target: t });
+                bilinks.push([s, i, t]);
+                //console.log([s, i, t]);
+                //console.log(bilinks);
+                //console.log(t);
+            });
+            //links creation
+
+
+            var link = svg.selectAll(".link")
+                .data(bilinks)
+                .enter().append("path")
+                .attr("class", "link")
+                .attr("stroke-width", 2)
+                .attr("strokeStyle","black")
+                //.attr("marker-start", "url(#arrow_out)")
+                .attr("marker-start", function (d_1) {
+                for (var n = 0; n < bilinks_success.length; n++) {
+                    if (bilinks_success[n][0].id == d_1[0].id && bilinks_success[n][2].id == d_1[2].id) {
+                        if (bilinks_success[n][3]) {
+                            console.log(bilinks_success[n]);
+                            return "url(#circleMarker)";
+                        }
+                        else
+
+                            return "url(#arrow_into)";
+                    }
+                }
+            })
+                .attr("marker-mid", "url(#textMarker)")
+                .attr("marker-end", function (d) {
+                    if (!d[2].link)
+                        return "url(#circleMarker)";
+                    else
+                        return "url(#circleMarker)";
+                })
+                .attr("marker-end", function (d_1) {
+                    for (var n = 0; n < bilinks_success.length; n++) {
+                        if (bilinks_success[n][0].id == d_1[0].id && bilinks_success[n][2].id == d_1[2].id) {
+                            if (bilinks_success[n][3]) {
+                                console.log(bilinks_success[n]);
+                                return "url(#arrow_out)";
+                            }
+                            else
+
+                                return "url(#circleMarker)";
+                        }
+                    }
+                });
+            //.attr();
+            console.log(bilinks_success);
+            console.log(bilinks_victory);
+            console.log(bilinks);
+
+
+
+
+
+
+            //node creation
+            var node = svg.selectAll(".node")
+                .data(original_nodes.filter(function (d) {
+                    return d.id;
+                }))
+                .enter().append("g")
+                .attr("class", "node");
+            //for every node -> svg circle creation
+            node.append("circle")
+                .attr("class", function (d) {
+                    if (d.link) {
+                        return "linknode";
+                    } else {
+                        return "node";
+                    }
+                })
+                .attr("r", function (d) {
+                    if (d.link) {
+                        return lNodeR;
+                    } else {
+                        return nodeR;
+                    }
+                })
+                .style("fill", function (d) {
+                    return (d.group == 0 ? "darkblue" : d.group == 1 ? "orange" : d.group == 2 ? "yellow" : d.group == 3 ? "Chartreuse" : d.group == 4 ? "cyan" : d.group == 5 ? "blue" : d.group == 6 ? "purple" : d.group == 7 ? "lightgrey" : "White")
+                });
+
+            //id text
+            node.append("text")
+                .attr("dx", 22)
+                .attr("dy", ".35em")
+                .text(function (d) {
+                    if (!d.link)
+                        return (d.group == 8 ? "" : d.group == 7 ? "" : d.id);
+                    return null;
+                })
+
+            //onmouseover id text
+            
+            node.append("title")
+                .text(function (d) {
+                    if (!d.link)
+                        return d.id;
+                    return null;
+                });
+                
+            node.call(drag);
+
+            //sphere marker
+
+            var marker = defs.append("marker")
+                .attr("id", "circleMarker")
+                .attr("markerHeight", 5)
+                .attr("markerWidth", 5)
+                .attr("markerUnits", "strokeWidth")
+                .attr("orient", "auto")
+                .attr("refX", 0)
+                .attr("refY", 0)
+                .attr("viewBox", "-6 -6 18 18")
+                .append("path")
+                .attr("d", "M 0, 0  m -5, 0  a 5,5 0 1,0 10,0  a 5,5 0 1,0 -10,0")
+                .attr("fill", "black");
+
+            var marker_out = defs.append("marker")
+                .attr("id", "arrow_out")
+                .attr('viewBox', '0 0 20 20')
+                .attr('refX', 12)
+                .attr('refY', 6)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 20)
+                .attr('markerHeight', 20)
+                .attr('xoverflow', 'visible')
+                .attr("id", "arrow_out")
+                .append('path')
+                .attr('d', 'M2,4 L10,6 L2,8 L6,6 Z')
+                .attr('fill', 'black')
+                .attr('stroke', '#f00')
+                .attr("stroke-opacity", 0);
+            ;
+
+
+
+            var marker_into = defs.append("marker")
+                .attr("id", "arrow_into")
+                .attr('viewBox', '4 4 20 20')
+                .attr('refX', 6)
+                .attr('refY', 6)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 20)
+                .attr('markerHeight', 20)
+                .attr('xoverflow', 'visible')
+                .attr("id", "arrow_into")
+                .append('path')
+                .attr('d', 'M14,4 L10,6 L14,8 L6,6 Z')
+                .attr('fill', 'black')
+                .attr('stroke', '#f00')
+                .attr("stroke-opacity", 0);
+            ;
+
+            console.log(JSON.stringify(original_nodes));
+            console.log(original_nodes);
+            simulation
+                .nodes(original_nodes)
+                .on("tick", ticked)
+                .force("link")
+                .links(links);
+
+            function ticked() {
+                link.attr("d", positionLink);
+                node.attr("transform", positionNode);
+            }
+
+
+        });
+
+
+
+
+
+
+
+        function sleepFor(sleepDuration) {
+            var now = new Date().getTime();
+            while (new Date().getTime() < now + sleepDuration) { /* do nothing */ }
+        }
+
+
+
+
+
+        function positionLink(d) {
+
+            curvy_coef=3
+            diffX0 = d[0].x - d[1].x;
+            diffY0 = d[0].y - d[1].y;
+            diffX2 = d[2].x - d[1].x;
+            diffY2 = d[2].y - d[1].y;
+
+            pathLength01 = Math.sqrt((diffX0 * diffX0) + (diffY0 * diffY0));
+            pathLength12 = Math.sqrt((diffX2 * diffX2) + (diffY2 * diffY2));
+
+            offsetX0 = (diffX0 * nodeR) / pathLength01;
+            offsetY0 = (diffY0 * nodeR) / pathLength01;
+            if (!d[2].link) {
+                offsetX2 = (diffX2 * nodeR) / pathLength12;
+                offsetY2 = (diffY2 * nodeR) / pathLength12;
+            } else {
+                offsetX2 = (diffX2 * lNodeR) / pathLength12;
+                offsetY2 = (diffY2 * lNodeR) / pathLength12;
+            }
+
+            var x0Pos, y0Pos, x2Pos, y2Pos;
+
+            if (d[0].link) {
+                x0Pos = d[0].x;
+                y0Pos = d[0].y;
+            } else {
+                x0Pos = d[0].x - offsetX0;
+                y0Pos = d[0].y - offsetY0;
+            }
+            if (d[2].link) {
+                x2Pos = d[2].x;
+                y2Pos = d[2].y;
+            } else {
+                x2Pos = d[2].x - offsetX2;
+                y2Pos = d[2].y - offsetY2;
+            }
+
+            x1Pos = (x0Pos + (d[1].x) * curvy_coef + x2Pos) / (2 + curvy_coef);
+            y1Pos = (y0Pos + (d[1].y) * curvy_coef + y2Pos) / (2 + curvy_coef);
+
+
+            return "M" + x0Pos + "," + y0Pos
+                + "S" + x1Pos + "," + y1Pos
+                + " " + x2Pos + "," + y2Pos;
+
+            //return "M" + x0Pos + "," + y0Pos
+            //    + "A" + x1Pos + "," + y1Pos
+            //    + " 0 0,1 " + x2Pos + "," + y2Pos
+        }
+
+        function positionNode(d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        }
+
+        function dragstarted(d) {
+
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x, d.fy = d.y;
+            d3.event.sourceEvent.stopPropagation();
+        }
+
+        function dragged(d) {
+            d.fx = d3.event.x, d.fy = d3.event.y;
+        }
+
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = null, d.fy = null;
+        }
+
+        function zoomed() {
+            svg.attr("transform", d3.event.transform);
+        }
+
+        function Create2DArray_3(ar) {
+            var arr = [];
+            var arr_temp = [];
+            var p = 0;
+
+            var arr_temp = Object.keys(ar).map(function (key) { return ar[key]; });
+
+            for (var i = 0; i < ar.length; i++) {
+
+                var count = 0;
+                var arr_1 = [];
+                var q = 0;
+
+                for (var j = 0; j < arr_temp[i].source.length; j++) {
+                    arr_1[count] = arr_temp[i].source[j];
+                    count++;
+                }
+
+                for (var k = 0; k < arr_temp[i].target.length; k++) {
+                    arr_1[count] = arr_temp[i].target[k];
+                    count++;
+                }
+                arr[i] = arr_1;
+
+            }
+
+            /*
+            for (var i = 0; i < ar.length; i++) {
+                for (var j = 0; j < arr_temp[i].source.length; j++) {
+                    for (var k = 0; k < arr_temp[i].target.length; k++) {
+                        arr[p] = [arr_temp[i].source[j], arr_temp[i].target[k]];
+                        p++;
+                    }
+                }
+            }
+
+            //        for (var i = 0; i < ar.length; i++) {
+            //            arr[i] = [ar[i].source, ar[i].target];
+            //        }
+            */
+            return arr;
+        }
+
+        function returnsource(ar) {
+            var arr = [];
+            var arr_temp = [];
+            var p = 0;
+            var counting = [];
+
+            var arr_temp = Object.keys(ar).map(function (key) { return ar[key]; });
+
+            for (var i = 0; i < ar.length; i++) {
+
+                var count = 0;
+                var arr_1 = [];
+                var q = 0;
+
+                for (var j = 0; j < arr_temp[i].source.length; j++) {
+                    arr_1[count] = arr_temp[i].source[j];
+                    count++;
+                    counting[i] = count;
+                }
+
+                for (var k = 0; k < arr_temp[i].target.length; k++) {
+                    arr_1[count] = arr_temp[i].target[k];
+                    count++;
+                }
+                arr[i] = arr_1;
+
+            }
+
+            return counting;
+        }
+
+        // takes wavelength in nm and returns an rgba value
+        function wavelengthToColor(wavelength) {
+            var r,
+                g,
+                b,
+                alpha,
+                colorSpace,
+                wl = wavelength,
+                gamma = 1;
+
+
+            if (wl >= 380 && wl < 440) {
+                R = -1 * (wl - 440) / (440 - 380);
+                G = 0;
+                B = 1;
+            } else if (wl >= 440 && wl < 490) {
+                R = 0;
+                G = (wl - 440) / (490 - 440);
+                B = 1;
+            } else if (wl >= 490 && wl < 510) {
+                R = 0;
+                G = 1;
+                B = -1 * (wl - 510) / (510 - 490);
+            } else if (wl >= 510 && wl < 580) {
+                R = (wl - 510) / (580 - 510);
+                G = 1;
+                B = 0;
+            } else if (wl >= 580 && wl < 645) {
+                R = 1;
+                G = -1 * (wl - 645) / (645 - 580);
+                B = 0.0;
+            } else if (wl >= 645 && wl <= 780) {
+                R = 1;
+                G = 0;
+                B = 0;
+            } else {
+                R = 0;
+                G = 0;
+                B = 0;
+            }
+
+            // intensty is lower at the edges of the visible spectrum.
+            if (wl > 780 || wl < 380) {
+                alpha = 0;
+            } else if (wl > 700) {
+                alpha = (780 - wl) / (780 - 700);
+            } else if (wl < 420) {
+                alpha = (wl - 380) / (420 - 380);
+            } else {
+                alpha = 1;
+            }
+
+            colorSpace = ["rgba(" + (R * 100) + "%," + (G * 100) + "%," + (B * 100) + "%, " + alpha + ")", R, G, B, alpha]
+
+            // colorSpace is an array with 5 elements.
+            // The first element is the complete code as a string.
+            // Use colorSpace[0] as is to display the desired color.
+            // use the last four elements alone or together to access each of the individual r, g, b and a channels.
+
+            return colorSpace;
+
+        }
+
+
+        function iterationCopy(src) {
+            let target = {};
+            for (let prop in src) {
+                if (src.hasOwnProperty(prop)) {
+                    target[prop] = src[prop];
+                }
+            }
+            return target;
+        }
+
+    </script>
+</body>
+</html>
